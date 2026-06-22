@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpportunityBox — Connect Gmail</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-mark">O</span>
+          <span class="logo-text">OpBox</span>
+        </div>
+        <div class="profile-pic" title="Your profile">A</div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-group">
+        <label class="filter-label">Batch</label>
+        <select class="filter-select" id="filter-batch">
+          <option value="">All batches</option>
+          <option value="2024">2024</option>
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+          <option value="2027">2027</option>
+          <option value="2028">2028</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Branch</label>
+        <select class="filter-select" id="filter-branch">
+          <option value="">All branches</option>
+          <option value="CSE">CSE</option>
+          <option value="ECE">ECE</option>
+          <option value="CEE">CEE</option>
+          <option value="ME">ME</option>
+          <option value="Civil">Civil</option>
+          <option value="Chemical">Chemical</option>
+          <option value="BioTech">BioTech</option>
+        </select>
+      </div>
+
+      <!-- Categories -->
+      <div class="nav-section-label">Categories</div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-category="all">
+          <span class="nav-icon">📥</span>
+          <span>All</span>
+          <span class="nav-badge" id="badge-all">0</span>
+        </button>
+        <button class="nav-item" data-category="internship">
+          <span class="nav-icon">💼</span>
+          <span>Internship</span>
+          <span class="nav-badge" id="badge-internship">0</span>
+        </button>
+        <button class="nav-item" data-category="placement">
+          <span class="nav-icon">🏢</span>
+          <span>Placement</span>
+          <span class="nav-badge" id="badge-placement">0</span>
+        </button>
+        <button class="nav-item" data-category="research">
+          <span class="nav-icon">📄</span>
+          <span>Research Paper</span>
+          <span class="nav-badge" id="badge-research">0</span>
+        </button>
+        <button class="nav-item" data-category="project">
+          <span class="nav-icon">🔧</span>
+          <span>Project</span>
+          <span class="nav-badge" id="badge-project">0</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="connect-btn" id="connect-gmail-btn">
+          <span>＋</span> Connect Gmail
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- ===== MAIN PANEL ===== -->
+    <main class="main">
+
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1 class="inbox-title">Inbox</h1>
+          <span class="inbox-count" id="inbox-count">0 opportunities</span>
+        </div>
+      </div>
+
+      <!-- Email List -->
+      <div class="email-list"></div>
+
+    </main>
+
+    <!-- ===== DETAIL PANEL ===== -->
+    <aside class="detail">
+      <div class="detail-header">
+        <div class="detail-company">🔵</div>
+        <div class="detail-role">Select an opportunity</div>
+        <div class="detail-meta">
+          <div class="detail-meta-item">
+            <span class="detail-meta-label">Deadline</span>
+            <span class="detail-meta-value">—</span>
+          </div>
+          <div class="detail-meta-item">
+            <span class="detail-meta-label">Location</span>
+            <span class="detail-meta-value">—</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
