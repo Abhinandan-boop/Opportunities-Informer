@@ -1,307 +1,249 @@
 // ============================================================
-//  API HELPERS
+//  DATA — empty, will be populated from API
 // ============================================================
-const API_BASE = '';
-
-async function checkAuthStatus() {
-  try {
-    const res = await fetch(`${API_BASE}/auth/status`, { credentials: 'include' });
-    const data = await res.json();
-    return data.authenticated;
-  } catch (error) {
-    console.error('Auth check failed:', error);
-    return false;
-  }
-}
-
-async function getAuthUrl() {
-  try {
-    const redirectTo = `${window.location.origin}${window.location.pathname}`;
-    const res = await fetch(`${API_BASE}/auth/google?redirectTo=${encodeURIComponent(redirectTo)}`, {
-      credentials: 'include'
-    });
-    const data = await res.json();
-    return data.authUrl;
-  } catch (error) {
-    console.error('Failed to get auth URL:', error);
-    return null;
-  }
-}
-
-async function fetchEmails(category = 'all') {
-  try {
-    const endpoint = category === 'all' 
-      ? `${API_BASE}/api/emails`
-      : `${API_BASE}/api/emails/category/${category}`;
-    
-    const res = await fetch(endpoint, { credentials: 'include' });
-    
-    if (!res.ok) {
-      if (res.status === 401) {
-        // Not authenticated
-        return null;
-      }
-      throw new Error(`HTTP ${res.status}`);
-    }
-    
-    const data = await res.json();
-    return data.emails || [];
-  } catch (error) {
-    console.error('Failed to fetch emails:', error);
-    return [];
-  }
-}
-
-async function logout() {
-  try {
-    await fetch(`${API_BASE}/auth/logout`, { method: 'POST', credentials: 'include' });
-    location.reload();
-  } catch (error) {
-    console.error('Logout failed:', error);
-  }
-}
-
-// ============================================================
-//  MOCK DATA FALLBACK
-// ============================================================
-const MOCK_LISTINGS = [
-  {
-    id: 1,
-    company: "Google",
-    role: "Software Engineering Intern",
-    category: "internship",
-    logo: "🔵",
-    stipend: "₹80,000/mo",
-    location: "Bangalore",
-    duration: "3 months",
-    deadline: "30 Jul 2025",
-    batch: ["2026", "2027"],
-    branches: ["CSE", "ECE"],
-    minCG: 8.0,
-    skills: ["Python", "DSA", "System Design"]
-  },
-  {
-    id: 2,
-    company: "Microsoft",
-    role: "Research Intern — AI/ML",
-    category: "research",
-    logo: "🪟",
-    stipend: "₹70,000/mo",
-    location: "Hyderabad",
-    deadline: "15 Aug 2025",
-    batch: ["2025", "2026"],
-    branches: ["CSE", "ECE"],
-    minCG: 7.5,
-    skills: ["Python", "PyTorch", "NLP"]
-  },
-  {
-    id: 3,
-    company: "Tata Steel",
-    role: "Graduate Engineer Trainee",
-    category: "placement",
-    logo: "🏗️",
-    stipend: "₹8 LPA",
-    location: "Jamshedpur",
-    deadline: "5 Aug 2025",
-    batch: ["2025"],
-    branches: ["ME", "Civil"],
-    minCG: 6.5
-  }
-];
+const LISTINGS = [];
 
 // ============================================================
 //  STATE
 // ============================================================
-let currentEmails = [];
-let currentCategory = 'all';
-let currentBatch = '';
-let currentBranch = '';
-let authenticated = false;
+let state = {
+  activeCategory: "all",
+  searchQuery: "",
+  filterBatch: "",
+  filterBranch: "",
+  filterCG: 0,
+  filterGender: "",
+  filterStipendMin: 0,
+  selectedId: null,
+  savedIds: new Set()
+};
 
 // ============================================================
-//  UI UPDATES
+//  DOM REFS
 // ============================================================
-function updateEmailUI(emails) {
-  const listContainer = document.querySelector('.email-list');
-  const countElement = document.getElementById('inbox-count');
-  
-  if (!listContainer) return;
+const listingListEl   = document.getElementById("listing-list");
+const emptyStateEl    = document.getElementById("empty-state");
+const inboxCountEl    = document.getElementById("inbox-count");
+const searchInput     = document.getElementById("search-input");
+const filterBatchSel  = document.getElementById("filter-batch");
+const filterBranchSel = document.getElementById("filter-branch");
+const filterToggleBtn = document.getElementById("filter-toggle-btn");
+const filterBar       = document.getElementById("filter-bar");
+const filterCGInput   = document.getElementById("filter-cg");
+const filterGenderSel = document.getElementById("filter-gender");
+const filterStipendIn = document.getElementById("filter-stipend");
+const applyFilterBtn  = document.getElementById("apply-filter-btn");
+const clearFilterBtn  = document.getElementById("clear-filter-btn");
+const detailPlaceholder = document.getElementById("detail-placeholder");
+const detailContent   = document.getElementById("detail-content");
+const toastEl         = document.getElementById("toast");
 
-  // Calculate badge counts
-  const counts = {
-    all: emails.length,
-    internship: emails.filter(e => e.category === 'internship').length,
-    placement: emails.filter(e => e.category === 'placement').length,
-    research: emails.filter(e => e.category === 'research').length,
-    project: emails.filter(e => e.category === 'project').length
-  };
+// Category nav items
+const navItems = document.querySelectorAll(".nav-item");
 
-  // Update badges
-  Object.entries(counts).forEach(([cat, count]) => {
-    const badge = document.getElementById(`badge-${cat}`);
-    if (badge) badge.textContent = count;
+// Detail panel fields
+const dLogo     = document.getElementById("d-logo");
+const dRole     = document.getElementById("d-role");
+const dCompany  = document.getElementById("d-company");
+const dCategory = document.getElementById("d-category");
+const dStipend  = document.getElementById("d-stipend");
+const dLocation = document.getElementById("d-location");
+const dDuration = document.getElementById("d-duration");
+const dDeadline = document.getElementById("d-deadline");
+const dBranches = document.getElementById("d-branches");
+const dCG       = document.getElementById("d-cg");
+const dBatch    = document.getElementById("d-batch");
+const dGender   = document.getElementById("d-gender");
+const dSkills   = document.getElementById("d-skills");
+const dInterview= document.getElementById("d-interview");
+const dApplyBtn = document.getElementById("d-apply-btn");
+const dSaveBtn  = document.getElementById("d-save-btn");
+
+// ============================================================
+//  FILTERING
+// ============================================================
+function getFilteredListings() {
+  return LISTINGS.filter(item => {
+    if (state.activeCategory !== "all" && item.category !== state.activeCategory) return false;
+    if (state.filterBatch && !item.batch.includes(state.filterBatch)) return false;
+    if (state.filterBranch && !item.branches.includes(state.filterBranch)) return false;
+    if (state.searchQuery) {
+      const q = state.searchQuery.toLowerCase();
+      const haystack = `${item.company} ${item.role} ${item.skills.join(" ")}`.toLowerCase();
+      if (!haystack.includes(q)) return false;
+    }
+    if (state.filterCG > 0 && item.minCG > state.filterCG) return false;
+    if (state.filterGender && item.gender.toLowerCase() !== state.filterGender && item.gender.toLowerCase() !== "all") return false;
+    return true;
+  });
+}
+
+// ============================================================
+//  RENDER — LISTING CARDS
+// ============================================================
+function renderListings() {
+  const filtered = getFilteredListings();
+
+  // Update badges — all 0 since no data yet
+  ["all", "internship", "placement", "research", "project"].forEach(cat => {
+    const count = cat === "all"
+      ? LISTINGS.length
+      : LISTINGS.filter(l => l.category === cat).length;
+    const el = document.getElementById(`badge-${cat}`);
+    if (el) el.textContent = count;
   });
 
-  // Update count
-  countElement.textContent = `${emails.length} opportunities`;
+  inboxCountEl.textContent = `${filtered.length} opportunit${filtered.length === 1 ? "y" : "ies"}`;
 
-  // Render emails
-  listContainer.innerHTML = emails.map(email => `
-    <div class="email-item ${email.unread ? 'unread' : ''}" data-id="${email.id}">
-      <div class="email-from">${email.from || email.company || 'Unknown'}</div>
-      <div class="email-subject">${email.subject || 'No subject'}</div>
-      <div class="email-snippet">${email.snippet || email.snippet || 'No preview'}</div>
-      <div class="email-meta">
-        <span class="email-date">${email.date || 'Unknown date'}</span>
-        <span class="email-category" data-category="${email.category}">${email.category || 'uncategorized'}</span>
-      </div>
-    </div>
-  `).join('');
+  listingListEl.innerHTML = "";
+  emptyStateEl.style.display = "flex";
 }
 
-function showConnectGmailButton() {
-  const btn = document.getElementById('connect-gmail-btn');
-  if (btn) {
-    btn.style.display = 'block';
-    btn.textContent = '＋ Connect Gmail';
-    btn.disabled = false;
-    btn.dataset.authenticated = 'false';
-  }
+// ============================================================
+//  RENDER — DETAIL PANEL
+// ============================================================
+function selectListing(id) {
+  const listing = LISTINGS.find(l => l.id === id);
+  if (!listing) return;
+  listing.unread = false;
+  state.selectedId = id;
+
+  dLogo.textContent     = listing.logo;
+  dRole.textContent     = listing.role;
+  dCompany.textContent  = listing.company;
+
+  dCategory.textContent = capitalize(listing.category);
+  dCategory.className   = "detail-category-badge tag tag-" + listing.category;
+
+  dStipend.textContent  = listing.stipend;
+  dLocation.textContent = listing.location;
+  dDuration.textContent = listing.duration;
+  dDeadline.textContent = "Deadline: " + listing.deadline;
+
+  dBranches.textContent = listing.branches.join(", ");
+  dCG.textContent       = listing.minCG + " and above";
+  dBatch.textContent    = listing.batch.join(", ");
+  dGender.textContent   = listing.gender;
+
+  dSkills.innerHTML = listing.skills
+    .map(s => `<span class="skill-pill">${s}</span>`)
+    .join("");
+
+  dInterview.innerHTML = listing.interview
+    .map(step => `<li>${step}</li>`)
+    .join("");
+
+  dSaveBtn.textContent = state.savedIds.has(id) ? "Saved ✓" : "Save";
+  dSaveBtn.className   = "btn-save" + (state.savedIds.has(id) ? " saved" : "");
+
+  dApplyBtn.onclick = () => {
+    showToast(`Opening application for ${listing.company}…`);
+  };
+
+  dSaveBtn.onclick = () => toggleSave(id);
+
+  detailPlaceholder.style.display = "none";
+  detailContent.style.display = "block";
+
+  renderListings();
 }
 
-function showDisconnectButton() {
-  const btn = document.getElementById('connect-gmail-btn');
-  if (btn) {
-    btn.textContent = 'Sign Out';
-    btn.disabled = false;
-    btn.dataset.authenticated = 'true';
+function toggleSave(id) {
+  if (state.savedIds.has(id)) {
+    state.savedIds.delete(id);
+    dSaveBtn.textContent = "Save";
+    dSaveBtn.classList.remove("saved");
+    showToast("Removed from saved");
+  } else {
+    state.savedIds.add(id);
+    dSaveBtn.textContent = "Saved ✓";
+    dSaveBtn.classList.add("saved");
+    showToast("Saved to your list ✓");
   }
 }
 
 // ============================================================
-//  FILTER & SEARCH
+//  TOAST
 // ============================================================
-async function applyFilters() {
-  let filtered = [...currentEmails];
+let toastTimer = null;
+function showToast(message) {
+  toastEl.textContent = message;
+  toastEl.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove("show"), 2500);
+}
 
-  // Filter by batch
-  if (currentBatch) {
-    filtered = filtered.filter(e => e.batch?.includes(currentBatch));
-  }
-
-  // Filter by branch
-  if (currentBranch) {
-    filtered = filtered.filter(e => e.branches?.includes(currentBranch));
-  }
-
-  // Filter by category
-  if (currentCategory !== 'all') {
-    filtered = filtered.filter(e => e.category === currentCategory);
-  }
-
-  updateEmailUI(filtered);
+// ============================================================
+//  HELPERS
+// ============================================================
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 // ============================================================
 //  EVENT LISTENERS
 // ============================================================
-document.addEventListener('DOMContentLoaded', async () => {
-  // Check if auth param in URL
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('auth') === 'success') {
-    authenticated = true;
-    window.history.replaceState({}, document.title, window.location.pathname);
-    showDisconnectButton();
-    await loadEmails();
-  }
 
-  // Check authentication status
-  authenticated = await checkAuthStatus();
-  if (authenticated) {
-    showDisconnectButton();
-    await loadEmails();
-  } else {
-    showConnectGmailButton();
-    // Show mock data for demo
-    updateEmailUI(MOCK_LISTINGS);
-  }
-
-  // Connect Gmail button
-  const connectBtn = document.getElementById('connect-gmail-btn');
-  if (connectBtn) {
-    connectBtn.addEventListener('click', async () => {
-      if (connectBtn.dataset.authenticated === 'true') {
-        await logout();
-        return;
-      }
-
-      const authUrl = await getAuthUrl();
-      if (authUrl) {
-        window.location.href = authUrl;
-      } else {
-        alert('Failed to connect to Gmail. Check console and backend logs.');
-      }
-    });
-  }
-
-  // Category filters
-  document.querySelectorAll('.nav-item').forEach(btn => {
-    btn.addEventListener('click', async (e) => {
-      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      currentCategory = btn.dataset.category;
-      await applyFilters();
-    });
-  });
-
-  // Batch filter
-  const batchSelect = document.getElementById('filter-batch');
-  if (batchSelect) {
-    batchSelect.addEventListener('change', (e) => {
-      currentBatch = e.target.value;
-      applyFilters();
-    });
-  }
-
-  // Branch filter
-  const branchSelect = document.getElementById('filter-branch');
-  if (branchSelect) {
-    branchSelect.addEventListener('change', (e) => {
-      currentBranch = e.target.value;
-      applyFilters();
-    });
-  }
-
-  // Detail panel click
-  document.addEventListener('click', (e) => {
-    if (e.target.closest('.email-item')) {
-      const emailItem = e.target.closest('.email-item');
-      document.querySelectorAll('.email-item').forEach(item => item.classList.remove('active'));
-      emailItem.classList.add('active');
-    }
+navItems.forEach(btn => {
+  btn.addEventListener("click", () => {
+    navItems.forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    state.activeCategory = btn.dataset.category;
+    state.selectedId = null;
+    detailPlaceholder.style.display = "flex";
+    detailContent.style.display = "none";
+    renderListings();
   });
 });
 
-// ============================================================
-//  LOAD EMAILS
-// ============================================================
-async function loadEmails() {
-  const emails = await fetchEmails(currentCategory);
-  
-  if (emails === null) {
-    alert('Not authenticated. Please connect Gmail first.');
-    authenticated = false;
-    showConnectGmailButton();
-    updateEmailUI(MOCK_LISTINGS);
-    return;
-  }
+filterBatchSel.addEventListener("change", () => {
+  state.filterBatch = filterBatchSel.value;
+  renderListings();
+});
 
-  if (emails.length === 0) {
-    console.log('No emails found, using mock data');
-    currentEmails = MOCK_LISTINGS;
-  } else {
-    currentEmails = emails;
-  }
+filterBranchSel.addEventListener("change", () => {
+  state.filterBranch = filterBranchSel.value;
+  renderListings();
+});
 
-  updateEmailUI(currentEmails);
-}
+let searchDebounce = null;
+searchInput.addEventListener("input", () => {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(() => {
+    state.searchQuery = searchInput.value.trim();
+    renderListings();
+  }, 250);
+});
+
+filterToggleBtn.addEventListener("click", () => {
+  filterBar.classList.toggle("open");
+  filterToggleBtn.classList.toggle("active");
+});
+
+applyFilterBtn.addEventListener("click", () => {
+  state.filterCG         = parseFloat(filterCGInput.value) || 0;
+  state.filterGender     = filterGenderSel.value;
+  state.filterStipendMin = parseFloat(filterStipendIn.value) || 0;
+  renderListings();
+  showToast("Filters applied");
+});
+
+clearFilterBtn.addEventListener("click", () => {
+  filterCGInput.value    = "";
+  filterGenderSel.value  = "";
+  filterStipendIn.value  = "";
+  state.filterCG         = 0;
+  state.filterGender     = "";
+  state.filterStipendMin = 0;
+  renderListings();
+  showToast("Filters cleared");
+});
+
+document.getElementById("connect-gmail-btn").addEventListener("click", () => {
+  showToast("Gmail OAuth coming soon — stay tuned!");
+});
+
+// ============================================================
+//  INIT
+// ============================================================
+renderListings();

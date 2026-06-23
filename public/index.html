@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OpportunityBox — Connect Gmail</title>
+  <title>OpportunityBox — Thapar</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -98,32 +98,125 @@
           <h1 class="inbox-title">Inbox</h1>
           <span class="inbox-count" id="inbox-count">0 opportunities</span>
         </div>
+        <div class="topbar-right">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input
+              type="text"
+              class="search-input"
+              id="search-input"
+              placeholder="Search company, role, skills…"
+            />
+          </div>
+          <button class="filter-btn" id="filter-toggle-btn">
+            <span>⚙</span> Filter
+          </button>
+        </div>
       </div>
 
-      <!-- Email List -->
-      <div class="email-list"></div>
+      <!-- Inline filter bar (hidden by default) -->
+      <div class="filter-bar" id="filter-bar">
+        <div class="filter-chip-group">
+          <label class="chip-label">Min CG</label>
+          <input type="number" class="chip-input" id="filter-cg" placeholder="e.g. 7.5" min="0" max="10" step="0.1" />
+        </div>
+        <div class="filter-chip-group">
+          <label class="chip-label">Gender</label>
+          <select class="chip-select" id="filter-gender">
+            <option value="">Any</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="all">Open to all</option>
+          </select>
+        </div>
+        <div class="filter-chip-group">
+          <label class="chip-label">Stipend (₹/mo)</label>
+          <input type="number" class="chip-input" id="filter-stipend" placeholder="Min stipend" min="0" step="1000" />
+        </div>
+        <button class="apply-filter-btn" id="apply-filter-btn">Apply</button>
+        <button class="clear-filter-btn" id="clear-filter-btn">Clear</button>
+      </div>
+
+      <!-- Listing cards -->
+      <div class="listing-list" id="listing-list">
+        <!-- Injected by JS -->
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-state" id="empty-state" style="display:none;">
+        <div class="empty-icon">📭</div>
+        <p class="empty-title">No opportunities found</p>
+        <p class="empty-sub">Try adjusting your filters or connect your Gmail to pull in more listings.</p>
+      </div>
 
     </main>
 
     <!-- ===== DETAIL PANEL ===== -->
-    <aside class="detail">
-      <div class="detail-header">
-        <div class="detail-company">🔵</div>
-        <div class="detail-role">Select an opportunity</div>
-        <div class="detail-meta">
-          <div class="detail-meta-item">
-            <span class="detail-meta-label">Deadline</span>
-            <span class="detail-meta-value">—</span>
+    <section class="detail-panel" id="detail-panel">
+      <div class="detail-placeholder" id="detail-placeholder">
+        <div class="detail-placeholder-icon">👆</div>
+        <p>Select an opportunity to see details</p>
+      </div>
+      <div class="detail-content" id="detail-content" style="display:none;">
+        <div class="detail-header">
+          <div class="detail-company-logo" id="d-logo"></div>
+          <div>
+            <h2 class="detail-role" id="d-role"></h2>
+            <p class="detail-company" id="d-company"></p>
           </div>
-          <div class="detail-meta-item">
-            <span class="detail-meta-label">Location</span>
-            <span class="detail-meta-value">—</span>
+          <span class="detail-category-badge" id="d-category"></span>
+        </div>
+
+        <div class="detail-meta-row">
+          <div class="meta-chip"><span>💰</span><span id="d-stipend"></span></div>
+          <div class="meta-chip"><span>📍</span><span id="d-location"></span></div>
+          <div class="meta-chip"><span>⏱</span><span id="d-duration"></span></div>
+          <div class="meta-chip"><span>📅</span><span id="d-deadline"></span></div>
+        </div>
+
+        <div class="detail-section">
+          <h3 class="section-heading">Eligibility</h3>
+          <div class="eligibility-grid">
+            <div class="elig-item">
+              <span class="elig-key">Branches</span>
+              <span class="elig-val" id="d-branches"></span>
+            </div>
+            <div class="elig-item">
+              <span class="elig-key">Min CG</span>
+              <span class="elig-val" id="d-cg"></span>
+            </div>
+            <div class="elig-item">
+              <span class="elig-key">Batch</span>
+              <span class="elig-val" id="d-batch"></span>
+            </div>
+            <div class="elig-item">
+              <span class="elig-key">Gender</span>
+              <span class="elig-val" id="d-gender"></span>
+            </div>
           </div>
         </div>
+
+        <div class="detail-section">
+          <h3 class="section-heading">Skills required</h3>
+          <div class="skills-wrap" id="d-skills"></div>
+        </div>
+
+        <div class="detail-section">
+          <h3 class="section-heading">Interview process</h3>
+          <ol class="interview-steps" id="d-interview"></ol>
+        </div>
+
+        <div class="detail-actions">
+          <button class="btn-apply" id="d-apply-btn">Apply now</button>
+          <button class="btn-save" id="d-save-btn">Save</button>
+        </div>
       </div>
-    </aside>
+    </section>
 
   </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast"></div>
 
   <script src="script.js"></script>
 </body>
