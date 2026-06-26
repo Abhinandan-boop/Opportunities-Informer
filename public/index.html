@@ -81,6 +81,15 @@
         </button>
       </nav>
 
+      <!-- Calendar nav -->
+<div class="nav-section-label" style="margin-top:8px;">Views</div>
+<nav class="sidebar-nav">
+  <button class="nav-item" id="calendar-nav-btn">
+    <span class="nav-icon">📅</span>
+    <span>Calendar</span>
+  </button>
+</nav>
+
       <div class="sidebar-footer">
         <button class="connect-btn" id="connect-gmail-btn">
           <span>＋</span> Connect Gmail
@@ -212,7 +221,22 @@
         </div>
       </div>
     </section>
-
+<!-- ===== CALENDAR VIEW ===== -->
+<div class="calendar-view" id="calendar-view" style="display:none;">
+  <div class="cal-header">
+    <button class="cal-nav-btn" id="cal-prev">&#8249;</button>
+    <h2 class="cal-month-title" id="cal-month-title"></h2>
+    <button class="cal-nav-btn" id="cal-next">&#8250;</button>
+  </div>
+  <div class="cal-weekdays">
+    <span>Sun</span><span>Mon</span><span>Tue</span>
+    <span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+  </div>
+  <div class="cal-grid" id="cal-grid"></div>
+  <div class="cal-events-panel" id="cal-events-panel">
+    <p class="cal-events-placeholder">Click a date to see deadlines</p>
+  </div>
+</div>
   </div>
 
   <!-- Toast notification -->

@@ -247,3 +247,174 @@ document.getElementById("connect-gmail-btn").addEventListener("click", () => {
 //  INIT
 // ============================================================
 renderListings();
+// ============================================================
+//  CALENDAR
+// ============================================================
+const calendarNavBtn  = document.getElementById("calendar-nav-btn");
+const calendarView    = document.getElementById("calendar-view");
+const mainPanel       = document.querySelector(".main");
+const detailPanel     = document.getElementById("detail-panel");
+const calPrevBtn      = document.getElementById("cal-prev");
+const calNextBtn      = document.getElementById("cal-next");
+const calMonthTitle   = document.getElementById("cal-month-title");
+const calGrid         = document.getElementById("cal-grid");
+const calEventsPanel  = document.getElementById("cal-events-panel");
+
+let calState = {
+  year: new Date().getFullYear(),
+  month: new Date().getMonth(),
+  selectedDate: null
+};
+
+// Sample deadlines — will come from API later
+const DEADLINES = [
+  { id: 1, company: "Google", role: "SWE Intern", category: "internship", deadline: new Date(2025, 6, 30) },
+  { id: 2, company: "Microsoft", role: "Research Intern", category: "research", deadline: new Date(2025, 7, 15) },
+  { id: 3, company: "Qualcomm", role: "Embedded Intern", category: "internship", deadline: new Date(2025, 6, 20) },
+  { id: 4, company: "Infosys", role: "Systems Engineer", category: "placement", deadline: new Date(2025, 6, 25) },
+];
+
+function getDeadlinesForDate(date) {
+  return DEADLINES.filter(d =>
+    d.deadline.getFullYear() === date.getFullYear() &&
+    d.deadline.getMonth() === date.getMonth() &&
+    d.deadline.getDate() === date.getDate()
+  );
+}
+
+function getDaysLeft(deadline) {
+  const today = new Date();
+  today.setHours(0,0,0,0);
+  const diff = Math.ceil((deadline - today) / (1000 * 60 * 60 * 24));
+  return diff;
+}
+
+function renderCalendar() {
+  const { year, month } = calState;
+  const monthNames = ["January","February","March","April","May","June",
+                      "July","August","September","October","November","December"];
+  calMonthTitle.textContent = `${monthNames[month]} ${year}`;
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrev = new Date(year, month, 0).getDate();
+  const today = new Date();
+
+  calGrid.innerHTML = "";
+
+  // Previous month days
+  for (let i = firstDay - 1; i >= 0; i--) {
+    const day = document.createElement("div");
+    day.className = "cal-day other-month";
+    day.innerHTML = `<span class="cal-day-num">${daysInPrev - i}</span>`;
+    calGrid.appendChild(day);
+  }
+
+  // Current month days
+  for (let d = 1; d <= daysInMonth; d++) {
+    const date = new Date(year, month, d);
+    const deadlines = getDeadlinesForDate(date);
+    const isToday = today.getFullYear() === year && today.getMonth() === month && today.getDate() === d;
+    const isSelected = calState.selectedDate &&
+      calState.selectedDate.getFullYear() === year &&
+      calState.selectedDate.getMonth() === month &&
+      calState.selectedDate.getDate() === d;
+
+    const day = document.createElement("div");
+    day.className = "cal-day" +
+      (isToday ? " today" : "") +
+      (deadlines.length > 0 ? " has-events" : "") +
+      (isSelected ? " selected" : "");
+
+    const dots = deadlines.map(dl =>
+      `<span class="cal-dot cal-dot-${dl.category}"></span>`
+    ).join("");
+
+    day.innerHTML = `
+      <span class="cal-day-num">${d}</span>
+      <div class="cal-dots">${dots}</div>
+    `;
+
+    day.addEventListener("click", () => {
+      calState.selectedDate = date;
+      renderCalendar();
+      renderCalendarEvents(date);
+    });
+
+    calGrid.appendChild(day);
+  }
+
+  // Next month filler days
+  const totalCells = calGrid.children.length;
+  const remaining = totalCells % 7 === 0 ? 0 : 7 - (totalCells % 7);
+  for (let i = 1; i <= remaining; i++) {
+    const day = document.createElement("div");
+    day.className = "cal-day other-month";
+    day.innerHTML = `<span class="cal-day-num">${i}</span>`;
+    calGrid.appendChild(day);
+  }
+}
+
+function renderCalendarEvents(date) {
+  const deadlines = getDeadlinesForDate(date);
+  const dateStr = date.toLocaleDateString("en-IN", { weekday:"long", day:"numeric", month:"long" });
+
+  if (deadlines.length === 0) {
+    calEventsPanel.innerHTML = `
+      <p class="cal-events-date-title">${dateStr}</p>
+      <p class="cal-events-placeholder">No deadlines on this date</p>
+    `;
+    return;
+  }
+
+  const items = deadlines.map(dl => {
+    const daysLeft = getDaysLeft(dl.deadline);
+    const urgencyClass = daysLeft <= 2 ? "urgent" : daysLeft <= 7 ? "soon" : "";
+    const label = daysLeft === 0 ? "Today!" : daysLeft < 0 ? "Expired" : `${daysLeft}d left`;
+    return `
+      <div class="cal-event-item">
+        <span class="cal-dot cal-event-dot cal-dot-${dl.category}"></span>
+        <div class="cal-event-info">
+          <div class="cal-event-role">${dl.role}</div>
+          <div class="cal-event-company">${dl.company}</div>
+        </div>
+        <span class="cal-event-days-left ${urgencyClass}">${label}</span>
+      </div>
+    `;
+  }).join("");
+
+  calEventsPanel.innerHTML = `
+    <p class="cal-events-date-title">${dateStr}</p>
+    ${items}
+  `;
+}
+
+// Nav buttons
+calPrevBtn.addEventListener("click", () => {
+  calState.month--;
+  if (calState.month < 0) { calState.month = 11; calState.year--; }
+  renderCalendar();
+});
+
+calNextBtn.addEventListener("click", () => {
+  calState.month++;
+  if (calState.month > 11) { calState.month = 0; calState.year++; }
+  renderCalendar();
+});
+
+// Toggle calendar view
+calendarNavBtn.addEventListener("click", () => {
+  const isCalendar = calendarView.style.display !== "none";
+  if (isCalendar) {
+    calendarView.style.display = "none";
+    mainPanel.style.display = "flex";
+    detailPanel.style.display = "flex";
+    calendarNavBtn.classList.remove("active");
+  } else {
+    calendarView.style.display = "flex";
+    mainPanel.style.display = "none";
+    detailPanel.style.display = "none";
+    calendarNavBtn.classList.add("active");
+    renderCalendar();
+  }
+});
