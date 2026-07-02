@@ -160,6 +160,12 @@ router.get('/google/callback', async (req, res) => {
     req.session.accessToken = tokens.access_token;
     req.session.refreshToken = tokens.refresh_token;
     req.session.authenticated = true;
+    // Store the lightweight Google profile for the dashboard account panel.
+    req.session.user = {
+      name: data.name,
+      email: data.email,
+      picture: data.picture
+    };
 
     const redirectUrl = new URL(returnTo || 'http://localhost:3000');
     redirectUrl.searchParams.set('auth', 'success');
@@ -176,7 +182,8 @@ router.get('/google/callback', async (req, res) => {
 // Step 3: Check if authenticated
 router.get('/status', (req, res) => {
   res.json({ 
-    authenticated: req.session.authenticated || false 
+    authenticated: req.session.authenticated || false,
+    user: req.session.authenticated ? req.session.user || null : null
   });
 });
 
