@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpportunityBox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/landing.css" />
+</head>
+<body>
+  <main class="landing-shell">
+    <nav class="landing-nav" aria-label="Primary navigation">
+      <a class="brand" href="/" aria-label="OpportunityBox home">
+        <span class="brand-mark">O</span>
+        <span>OpportunityBox</span>
+      </a>
+      <button class="nav-cta" id="nav-google-btn" type="button">Continue</button>
+    </nav>
+
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <div class="eyebrow">
+          <span class="pulse"></span>
+          Gmail-native opportunity discovery
+        </div>
+        <h1 id="hero-title">Never miss another opportunity.</h1>
+        <p class="hero-subtitle">
+          Automatically discover internships, placements, research opportunities and projects directly from your Gmail.
+        </p>
+        <div class="hero-actions">
+          <button class="google-btn" id="google-btn" type="button">
+            <span class="google-mark" aria-hidden="true">G</span>
+            <span>Continue with Google</span>
+          </button>
+          <p class="auth-note" id="auth-note">Secure Gmail read access through Google OAuth.</p>
+        </div>
+      </div>
+
+      <div class="hero-visual" aria-hidden="true">
+        <div class="inbox-window glass-panel">
+          <div class="window-bar">
+            <span></span><span></span><span></span>
+          </div>
+          <div class="metric-strip">
+            <div>
+              <strong>24</strong>
+              <span>New leads</span>
+            </div>
+            <div>
+              <strong>7</strong>
+              <span>Deadlines</span>
+            </div>
+          </div>
+          <div class="mail-row active">
+            <span class="mail-dot"></span>
+            <div>
+              <strong>Research Intern opening</strong>
+              <span>Deadline detected: Jul 18</span>
+            </div>
+          </div>
+          <div class="mail-row">
+            <span class="mail-dot green"></span>
+            <div>
+              <strong>Placement drive update</strong>
+              <span>Eligibility matched</span>
+            </div>
+          </div>
+          <div class="mail-row">
+            <span class="mail-dot amber"></span>
+            <div>
+              <strong>Project assistant role</strong>
+              <span>Tagged as project</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="features" aria-label="OpportunityBox features">
+      <article class="feature-card glass-panel">
+        <span class="feature-icon">M</span>
+        <h2>Gmail Sync</h2>
+        <p>Bring unread opportunity emails into one focused workspace.</p>
+      </article>
+      <article class="feature-card glass-panel">
+        <span class="feature-icon">AI</span>
+        <h2>AI Opportunity Extraction</h2>
+        <p>Classify emails into internships, placements, research, and projects.</p>
+      </article>
+      <article class="feature-card glass-panel">
+        <span class="feature-icon">S</span>
+        <h2>Smart Search</h2>
+        <p>Find relevant senders, roles, snippets, and categories in seconds.</p>
+      </article>
+      <article class="feature-card glass-panel">
+        <span class="feature-icon">D</span>
+        <h2>Deadline Calendar</h2>
+        <p>Track upcoming application windows from a dedicated calendar view.</p>
+      </article>
+    </section>
+  </main>
+
+  <script src="js/landing.js"></script>
+</body>
+</html>

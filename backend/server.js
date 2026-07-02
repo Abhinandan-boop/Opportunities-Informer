@@ -37,7 +37,8 @@ app.use(
 // ---------------------------
 // Serve Frontend
 // ---------------------------
-app.use(express.static(path.join(__dirname, '../public')));
+// The frontend now has separate landing and dashboard pages under /frontend.
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 // ---------------------------
 // API Routes
@@ -59,7 +60,7 @@ app.get('/api/health', (req, res) => {
 // Serve Frontend for all pages
 // ---------------------------
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
+  res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
 // ---------------------------
@@ -74,4 +75,3 @@ app.listen(PORT, () => {
   console.log('🔑 Gmail OAuth Ready');
   console.log('=========================================');
 });
-

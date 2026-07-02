@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpportunityBox Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+</head>
+<body>
+
+  <div class="app">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar">
+
+      <div class="sidebar-header">
+        <div class="logo">
+          <span class="logo-mark">O</span>
+          <span class="logo-text">OpBox</span>
+        </div>
+        <div class="profile-pic" id="profile-avatar" title="Your profile">O</div>
+      </div>
+
+      <!-- Filters -->
+      <div class="filter-group">
+        <label class="filter-label">Batch</label>
+        <select class="filter-select" id="filter-batch">
+          <option value="">All batches</option>
+          <option value="2024">2024</option>
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+          <option value="2027">2027</option>
+          <option value="2028">2028</option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label class="filter-label">Branch</label>
+        <select class="filter-select" id="filter-branch">
+          <option value="">All branches</option>
+          <option value="CSE">CSE</option>
+          <option value="ECE">ECE</option>
+          <option value="CEE">CEE</option>
+          <option value="ME">ME</option>
+          <option value="Civil">Civil</option>
+          <option value="Chemical">Chemical</option>
+          <option value="BioTech">BioTech</option>
+        </select>
+      </div>
+
+      <!-- Categories -->
+      <div class="nav-section-label">Categories</div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-category="all">
+          <span class="nav-icon">📥</span>
+          <span>All</span>
+          <span class="nav-badge" id="badge-all">0</span>
+        </button>
+        <button class="nav-item" data-category="internship">
+          <span class="nav-icon">💼</span>
+          <span>Internship</span>
+          <span class="nav-badge" id="badge-internship">0</span>
+        </button>
+        <button class="nav-item" data-category="placement">
+          <span class="nav-icon">🏢</span>
+          <span>Placement</span>
+          <span class="nav-badge" id="badge-placement">0</span>
+        </button>
+        <button class="nav-item" data-category="research">
+          <span class="nav-icon">📄</span>
+          <span>Research Paper</span>
+          <span class="nav-badge" id="badge-research">0</span>
+        </button>
+        <button class="nav-item" data-category="project">
+          <span class="nav-icon">🔧</span>
+          <span>Project</span>
+          <span class="nav-badge" id="badge-project">0</span>
+        </button>
+      </nav>
+
+      <!-- Calendar nav -->
+<div class="nav-section-label" style="margin-top:8px;">Views</div>
+<nav class="sidebar-nav">
+  <button class="nav-item" id="calendar-nav-btn">
+    <span class="nav-icon">📅</span>
+    <span>Calendar</span>
+  </button>
+</nav>
+
+      <!-- Auth controls are dashboard-only now; Gmail connection starts on the landing page. -->
+      <div class="sidebar-footer auth-footer">
+        <div class="user-card" id="user-card">
+          <div class="user-avatar" id="user-avatar">O</div>
+          <div class="user-meta">
+            <span class="user-name" id="user-name">OpportunityBox</span>
+            <span class="user-email" id="user-email">Checking connection...</span>
+          </div>
+        </div>
+        <div class="connected-status" id="connected-status">
+          <span class="status-dot"></span>
+          <span>Gmail connected</span>
+        </div>
+        <button class="signout-btn" id="signout-btn">Sign Out</button>
+      </div>
+
+    </aside>
+
+    <!-- ===== MAIN PANEL ===== -->
+    <main class="main">
+
+      <!-- Topbar -->
+      <div class="topbar">
+        <div class="topbar-left">
+          <h1 class="inbox-title">Inbox</h1>
+          <span class="inbox-count" id="inbox-count">0 opportunities</span>
+        </div>
+        <div class="topbar-right">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input
+              type="text"
+              class="search-input"
+              id="search-input"
+              placeholder="Search company, role, skills…"
+            />
+          </div>
+          <button class="filter-btn" id="filter-toggle-btn">
+            <span>⚙</span> Filter
+          </button>
+        </div>
+      </div>
+
+      <!-- Inline filter bar (hidden by default) -->
+      <div class="filter-bar" id="filter-bar">
+        <div class="filter-chip-group">
+          <label class="chip-label">Min CG</label>
+          <input type="number" class="chip-input" id="filter-cg" placeholder="e.g. 7.5" min="0" max="10" step="0.1" />
+        </div>
+        <div class="filter-chip-group">
+          <label class="chip-label">Gender</label>
+          <select class="chip-select" id="filter-gender">
+            <option value="">Any</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="all">Open to all</option>
+          </select>
+        </div>
+        <div class="filter-chip-group">
+          <label class="chip-label">Stipend (₹/mo)</label>
+          <input type="number" class="chip-input" id="filter-stipend" placeholder="Min stipend" min="0" step="1000" />
+        </div>
+        <button class="apply-filter-btn" id="apply-filter-btn">Apply</button>
+        <button class="clear-filter-btn" id="clear-filter-btn">Clear</button>
+      </div>
+
+      <!-- Listing cards -->
+      <div class="listing-list" id="listing-list">
+        <!-- Injected by JS -->
+      </div>
+
+      <!-- Empty state -->
+      <div class="empty-state" id="empty-state" style="display:none;">
+        <div class="empty-icon">📭</div>
+        <p class="empty-title">No opportunities found</p>
+        <p class="empty-sub">Try adjusting your filters or refresh your Gmail sync.</p>
+      </div>
+
+    </main>
+
+    <!-- ===== DETAIL PANEL ===== -->
+    <section class="detail-panel" id="detail-panel">
+      <div class="detail-placeholder" id="detail-placeholder">
+        <div class="detail-placeholder-icon">👆</div>
+        <p>Select an opportunity to see details</p>
+      </div>
+      <div class="detail-content" id="detail-content" style="display:none;">
+        <div class="detail-header">
+          <div class="detail-company-logo" id="d-logo"></div>
+          <div>
+            <h2 class="detail-role" id="d-role"></h2>
+            <p class="detail-company" id="d-company"></p>
+          </div>
+          <span class="detail-category-badge" id="d-category"></span>
+        </div>
+
+        <div class="detail-meta-row">
+          <div class="meta-chip"><span>💰</span><span id="d-stipend"></span></div>
+          <div class="meta-chip"><span>📍</span><span id="d-location"></span></div>
+          <div class="meta-chip"><span>⏱</span><span id="d-duration"></span></div>
+          <div class="meta-chip"><span>📅</span><span id="d-deadline"></span></div>
+        </div>
+
+        <div class="detail-section">
+          <h3 class="section-heading">Eligibility</h3>
+          <div class="eligibility-grid">
+            <div class="elig-item">
+              <span class="elig-key">Branches</span>
+              <span class="elig-val" id="d-branches"></span>
+            </div>
+            <div class="elig-item">
+              <span class="elig-key">Min CG</span>
+              <span class="elig-val" id="d-cg"></span>
+            </div>
+            <div class="elig-item">
+              <span class="elig-key">Batch</span>
+              <span class="elig-val" id="d-batch"></span>
+            </div>
+            <div class="elig-item">
+              <span class="elig-key">Gender</span>
+              <span class="elig-val" id="d-gender"></span>
+            </div>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3 class="section-heading">Skills required</h3>
+          <div class="skills-wrap" id="d-skills"></div>
+        </div>
+
+        <div class="detail-section">
+          <h3 class="section-heading">Interview process</h3>
+          <ol class="interview-steps" id="d-interview"></ol>
+        </div>
+
+        <div class="detail-actions">
+          <button class="btn-apply" id="d-apply-btn">Apply now</button>
+          <button class="btn-save" id="d-save-btn">Save</button>
+        </div>
+      </div>
+    </section>
+<!-- ===== CALENDAR VIEW ===== -->
+<div class="calendar-view" id="calendar-view" style="display:none;">
+  <div class="cal-header">
+    <button class="cal-nav-btn" id="cal-prev">&#8249;</button>
+    <h2 class="cal-month-title" id="cal-month-title"></h2>
+    <button class="cal-nav-btn" id="cal-next">&#8250;</button>
+  </div>
+  <div class="cal-weekdays">
+    <span>Sun</span><span>Mon</span><span>Tue</span>
+    <span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+  </div>
+  <div class="cal-grid" id="cal-grid"></div>
+  <div class="cal-events-panel" id="cal-events-panel">
+    <p class="cal-events-placeholder">Click a date to see deadlines</p>
+  </div>
+</div>
+  </div>
+
+  <!-- Toast notification -->
+  <div class="toast" id="toast"></div>
+
+  <script src="js/script.js"></script>
+</body>
+</html>
